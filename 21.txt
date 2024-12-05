@@ -1,0 +1,83 @@
+import csv
+import math
+import random
+from collections import Counter
+
+# 从文件中读取数据集
+# 该函数接受一个文件名作为参数，用于读取包含数据的CSV文件，将文件中的数据整理成特定格式的列表并返回
+# 其中每一项数据由特征向量和对应的标签组成
+def load_dataset(filename):
+    dataset = []
+    # 打开指定的文件，以只读模式('r')打开
+    with open(filename, 'r') as file:
+        csv_reader = csv.reader(file)
+        # 跳过CSV文件的第一行（通常是表头之类的信息）
+        next(csv_reader)  
+        # 遍历CSV文件中剩余的每一行数据
+        for row in csv_reader:
+            # 将当前行除最后一个元素外的其他元素转换为浮点数，组成特征向量
+            sample = [float(value) for value in row[:-1]]
+            # 将当前行的最后一个元素转换为整数，作为数据的标签
+            label = int(row[-1])
+            dataset.append((sample, label))
+    return dataset
+
+# 计算欧氏距离
+# 该函数接受两个点（在这里点可以理解为特征向量）作为参数，按照欧氏距离的计算公式来计算并返回两点间的距离
+def euclidean_distance(point1, point2):
+    squared_distance = 0
+    # 遍历特征向量的每一个维度，计算对应维度差值的平方，并累加到squared_distance变量中
+    for i in range(len(point1)):
+        squared_distance += (point1[i] - point2[i]) ** 2
+    # 对累加的平方和开平方，得到两点间的欧氏距离
+    distance = math.sqrt(squared_distance)
+    return distance
+
+# K近邻算法
+# 该函数实现了K近邻分类算法，接受近邻数量k、数据集dataset以及待分类的新数据点new_point作为参数，返回预测的类别标签
+def k_nearest_neighbors(k, dataset, new_point):
+    distances = []
+    # 遍历数据集中的每一个样本（由特征向量和标签组成）
+    for sample, label in dataset:
+        # 计算当前样本与待分类新数据点的欧氏距离，并将距离和对应的标签组成元组，添加到distances列表中
+        distance = euclidean_distance(sample, new_point)
+        distances.append((distance, label))
+    # 对距离列表按照距离从小到大进行排序，以便后续选取最近的k个邻居
+    distances.sort()  
+    # 取前k个距离最近的样本（包含距离和对应的标签）
+    k_nearest = distances[:k]  
+    # 从k个最近的样本中提取出对应的标签，组成一个只包含标签的列表
+    labels = [label for distance, label in k_nearest]
+    # 使用Counter类统计每个类别标签出现的次数（相当于投票）
+    vote_counts = Counter(labels)  
+    # 返回出现次数最多的类别标签，也就是预测的类别标签
+    predicted_label = vote_counts.most_common(1)[0][0]  
+    return predicted_label
+
+if __name__ == "__main__":
+    # 加载鸢尾花数据集，这里假设文件名为'iris_dataset.csv'，实际使用时需确保文件存在且格式正确
+    dataset = load_dataset('iris_dataset.csv')
+    # 设置随机种子，保证每次打乱数据集的顺序都是一样的（只要种子相同），这里种子设置为"zp"
+    random.seed("zp")
+    # 对整个数据集进行随机打乱顺序操作，使得数据分布更随机，便于划分训练集和测试集
+    random.shuffle(dataset)  
+    # 计算训练集的大小，取数据集总长度的80%作为训练集大小（这里假设按照8:2的比例划分训练集和测试集）
+    train_size = int(0.8 * len(dataset))
+    # 划分训练集，取打乱后数据集的前train_size个元素作为训练集
+    train_set = dataset[:train_size]
+    # 划分测试集，取打乱后数据集剩余的元素作为测试集
+    test_set = dataset[train_size:]
+
+    # 在测试集上进行预测，并统计预测正确的数量
+    correct_predictions = 0
+    # 遍历测试集中的每一个样本（由特征向量和真实标签组成）
+    for sample, label in test_set:
+        # 使用K近邻算法（这里k取3），基于训练集对当前测试样本进行预测，得到预测的类别标签
+        predicted_label = k_nearest_neighbors(3, train_set, sample)
+        # 如果预测的类别标签和真实标签一致，说明预测正确，将正确预测的数量加1
+        if predicted_label == label:
+            correct_predictions += 1
+
+    # 计算预测准确率，用预测正确的数量除以测试集的总样本数量
+    accuracy = correct_predictions / len(test_set)
+    print(f"Accuracy: {accuracy}")
