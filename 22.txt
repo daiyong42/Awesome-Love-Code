@@ -1,0 +1,36 @@
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+# 加载鸢尾花数据集
+# sklearn库中的load_iris函数用于加载鸢尾花数据集，它返回一个包含数据和相关信息的对象
+iris = load_iris()
+# 从加载的鸢尾花数据集对象中提取特征数据部分，通常是一个二维数组，每一行代表一个样本的特征向量
+X = iris.data  
+# 从加载的鸢尾花数据集对象中提取目标数据部分，即每个样本对应的类别标签，通常是一维数组
+y = iris.target  
+
+# 将数据集拆分为训练集和测试集
+# 使用train_test_split函数按照指定的比例（test_size=0.2表示测试集占总数据集的20%）和随机种子（random_state=10用于确保每次划分结果一致，便于复现）
+# 把特征数据X和目标数据y分别划分为训练集特征（X_train）、测试集特征（X_test）、训练集标签（y_train）、测试集标签（y_test）
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, 
+                                                    random_state=10)
+
+# 创建K近邻分类器模型
+# 通过KNeighborsClassifier类创建一个K近邻分类器的实例，这里设置近邻数量n_neighbors为3，即表示在进行分类预测时参考3个最近的邻居样本
+model = KNeighborsClassifier(n_neighbors=3)  
+
+# 在训练集上训练模型
+# 调用模型的fit方法，传入训练集的特征数据（X_train）和对应的标签数据（y_train），让模型学习数据中的模式和规律
+model.fit(X_train, y_train)
+
+# 在测试集上进行预测
+# 使用训练好的模型的predict方法，传入测试集的特征数据（X_test），得到模型对测试集样本的预测类别标签，结果保存在y_pred中
+y_pred = model.predict(X_test)
+
+# 计算准确率
+# 使用accuracy_score函数，传入测试集的真实标签（y_test）和模型预测得到的标签（y_pred），计算并返回预测结果的准确率
+accuracy = accuracy_score(y_test, y_pred)
+# 打印输出准确率信息
+print("准确率：", accuracy)
