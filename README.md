@@ -11,7 +11,7 @@
     <!-- 第一行 -->
     <tr>
     <td valign="top">
-        <a target="_blank" href="https://love.love.daiyong.fun/Web/001">
+        <a target="_blank" href="https://love.daiyong.fun/Web/001">
             <p align="center">001</p>
             <img src="https://love.daiyong.fun/assets/img/web/001.jpg"/>
         </a>
