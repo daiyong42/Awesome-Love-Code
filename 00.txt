@@ -1,0 +1,380 @@
+K近邻核心代码：鸢尾花例
+
+Python版：
+# 计算欧氏距离
+# 该函数接受两个点（在这里点可以理解为特征向量）作为参数，按照欧氏距离的计算公式来计算并返回两点间的距离
+def euclidean_distance(point1, point2):
+    squared_distance = 0
+    # 遍历特征向量的每一个维度，计算对应维度差值的平方，并累加到squared_distance变量中
+    for i in range(len(point1)):
+        squared_distance += (point1[i] - point2[i]) ** 2
+    # 对累加的平方和开平方，得到两点间的欧氏距离
+    distance = math.sqrt(squared_distance)
+    return distance
+# K近邻算法
+# 该函数实现了K近邻分类算法，接受近邻数量k、数据集dataset以及待分类的新数据点new_point作为参数，返回预测的类别标签
+def k_nearest_neighbors(k, dataset, new_point):
+    distances = []
+    # 遍历数据集中的每一个样本（由特征向量和标签组成）
+    for sample, label in dataset:
+        # 计算当前样本与待分类新数据点的欧氏距离，并将距离和对应的标签组成元组，添加到distances列表中
+        distance = euclidean_distance(sample, new_point)
+        distances.append((distance, label))
+    # 对距离列表按照距离从小到大进行排序，以便后续选取最近的k个邻居
+    distances.sort()  
+    # 取前k个距离最近的样本（包含距离和对应的标签）
+    k_nearest = distances[:k]  
+    # 从k个最近的样本中提取出对应的标签，组成一个只包含标签的列表
+    labels = [label for distance, label in k_nearest]
+    # 使用Counter类统计每个类别标签出现的次数（相当于投票）
+    vote_counts = Counter(labels)  
+    # 返回出现次数最多的类别标签，也就是预测的类别标签
+    predicted_label = vote_counts.most_common(1)[0][0]  
+    return predicted_label
+sklrean版：
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+# 加载鸢尾花数据集
+iris = load_iris()
+X = iris.data  # 特征数据
+y = iris.target  # 目标数据
+# 将数据集拆分为训练集和测试集
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, 
+                                                    random_state=10)
+# 创建K近邻分类器模型
+model = KNeighborsClassifier(n_neighbors=3)  # 这里设置K值为3
+# 在训练集上训练模型
+model.fit(X_train, y_train)
+# 在测试集上进行预测
+y_pred = model.predict(X_test)
+# 计算准确率
+accuracy = accuracy_score(y_test, y_pred)
+print("准确率：", accuracy)
+
+K近邻 房价预测核心代码Python版：
+# 读取波士顿数据集
+def load_dataset(filename):
+    dataset = []
+    with open(filename, 'r') as file:
+        for line in file:
+            data = line.strip().split()
+            sample = [float(value) for value in data]
+            dataset.append(sample)
+    return dataset
+# 划分训练集和测试集
+def split_dataset(dataset, split_ratio):
+    random.shuffle(dataset)  # 打乱数据集顺序
+    train_size = int(len(dataset) * split_ratio)
+    train_set = dataset[:train_size]
+    test_set = dataset[train_size:]
+    return train_set, test_set
+# K近邻算法（用于回归）
+def k_nearest_neighbors_regression(k, train_set, new_point):
+    distances = []
+    for sample in train_set:
+        distance = euclidean_distance(sample[:-1], new_point[:-1])
+        distances.append((distance, sample))
+    distances.sort()  # 按距离排序
+    k_nearest = distances[:k]  # 取前k个最近的距离
+    total_value = sum(sample[-1] for distance, sample in k_nearest)
+    predicted_value = total_value / k  # 回归问题，预测值为k个最近样本的平均值
+    return predicted_value
+
+房价预测sklrean版：
+import numpy as np
+import pandas as pd
+#from sklearn.datasets import load_boston
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import mean_squared_error
+# 读取波士顿数据集
+def load_dataset(filename):
+    dataset = []
+    with open(filename, 'r') as file:
+        for line in file:
+            data = line.strip().split()
+            sample = [float(value) for value in data]
+            dataset.append(sample)
+    return dataset
+# 加载波士顿房价数据集
+#data = load_dataset('data\\ch02\\boston.housing.data')
+#data = load_dataset('data/ch02/boston.housing.data') #linux
+data = load_dataset('boston.housing.data') #linux
+df = pd.DataFrame(data)
+# 划分训练集和测试集
+X_train, X_test, y_train, y_test = train_test_split(df.iloc[:, :-1], df.iloc[:, -1], 
+                                                    test_size=0.2, random_state=42)
+# 构建K近邻回归模型
+k = 3  # 可调节K值
+model = KNeighborsRegressor(n_neighbors=k)
+model.fit(X_train, y_train)
+# 预测测试集
+y_pred = model.predict(X_test)
+# 计算均方误差（MSE）
+mse = mean_squared_error(y_test, y_pred)
+print("均方误差（MSE）:", mse)
+
+
+
+
+
+
+
+
+
+深度学习：
+
+p1-MLP核心代码：
+
+# 提取特征和目标变量
+X = data.drop('MPG', axis=1).values
+y = data['MPG'].values
+# 数据归一化
+scaler = MinMaxScaler()
+X = scaler.fit_transform(X)
+# 划分训练集和测试集
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+print("预处理后shape(X_train, X_test, y_train, y_test)：",X_train.shape,X_test.shape,y_train.shape, y_test.shape)
+class MLP_Model(tf.keras.Model):
+    def __init__(self):
+        super(MLP_Model, self).__init__()
+        # 创建3个全连接层
+        self.fc1 = tf.keras.layers.Dense(64, activation='relu')
+        self.fc2 = tf.keras.layers.Dense(64, activation='relu')
+        self.fc3 = tf.keras.layers.Dense(1)
+    def call(self, inputs, training=None, mask=None):
+        # 依次通过3个全连接层
+        x = self.fc1(inputs)
+        x = self.fc2(x)
+        x = self.fc3(x)
+        return x
+model = MLP_Model()
+model.build(input_shape=(None, 9))
+model.summary()
+optimizer = tf.keras.optimizers.RMSprop(0.001)
+train_db = tf.data.Dataset.from_tensor_slices((X_train, y_train))
+train_db = train_db.shuffle(100).batch(32)
+train_mae_losses = []
+test_mae_losses = []
+for epoch in range(200):
+    for step, (x,y) in enumerate(train_db):
+        with tf.GradientTape() as tape:
+            out = model(x)
+            mae_loss = tf.reduce_mean(tf.keras.losses.MAE(y, out)) 
+        if epoch % 10 == 0 and step % 5 == 0:
+            print(epoch, step, float(mae_loss))
+        grads = tape.gradient(mae_loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(grads, model.trainable_variables))
+    train_mae_losses.append(float(mae_loss))
+    out = model(tf.constant(X_test))
+    test_mae_losses.append(tf.reduce_mean(tf.keras.losses.MAE(y_test, out)))
+
+
+P2-CNN核心代码：
+
+#网络模型类的构造和实例化
+class CNN_Model(Model):
+  def __init__(self):
+    super(CNN_Model, self).__init__()
+    self.conv1 = Conv2D(32, 3, activation='relu')
+    self.flatten = Flatten()
+    self.d1 = Dense(128, activation='relu')
+    self.d2 = Dense(10)      
+  def call(self, x):
+    x = self.conv1(x)
+    x = self.flatten(x)
+    x = self.d1(x)
+    return self.d2(x)
+model = CNN_Model()
+#选择优化器和损失函数
+loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+optimizer = tf.keras.optimizers.Adam()
+#选择度量标准
+train_loss = tf.keras.metrics.Mean(name='train_loss')
+train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
+
+test_loss = tf.keras.metrics.Mean(name='test_loss')
+test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
+#模型训练函数的定义
+def train_step(images, labels):
+  with tf.GradientTape() as tape:
+    predictions = model(images, training=True)
+    loss = loss_object(labels, predictions)
+  gradients = tape.gradient(loss, model.trainable_variables)
+  optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
+  train_loss(loss)
+  train_accuracy(labels, predictions)
+#模型训练和测试
+EPOCHS =4
+d1 = datetime.datetime.now()
+for epoch in range(EPOCHS):
+
+  train_loss.reset_states()
+  train_accuracy.reset_states()
+  test_loss.reset_states()
+  test_accuracy.reset_states()
+
+  for images, labels in train_ds:
+    train_step(images, labels)
+
+  for test_images, test_labels in test_ds:
+    test_step(test_images, test_labels)
+
+  template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
+  print(template.format(epoch + 1,
+                        train_loss.result(),
+                        train_accuracy.result() * 100,
+                        test_loss.result(),
+                        test_accuracy.result() * 100))
+
+d2 = datetime.datetime.now()
+d = d2-d1 
+d.seconds
+
+P3-RNN核心代码：
+
+#RNN 情感分类问题实战
+#import  os
+import  tensorflow as tf
+import  numpy as np
+from tensorflow import keras
+from tensorflow.keras import layers, losses, optimizers, Sequential
+tf.random.set_seed(22)
+np.random.seed(22)
+
+batchsz = 512 # 批量大小
+total_words = 10000 # 词汇表大小N_vocab
+max_review_len = 80 # 句子最大长度s，大于的句子部分将截断，小于的将填充
+embedding_len = 100 # 词向量特征长度f
+#word_index = keras.datasets.imdb.get_word_index()
+# 保存 word_index 字典到本地文件
+#np.save("data/ch12DL/imdb_word_index.npy", word_index)
+
+# 从本地文件重新加载 word_index 字典
+word_index = np.load("imdb_word_index.npy", allow_pickle=True).item()
+print(word_index)
+
+
+P4-LSTM核心代码：
+
+import tensorflow as tf
+import pandas as pd
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from sklearn.model_selection import train_test_split
+
+# 假设您已经加载并准备好了 SMSSpamCollection 数据集，其中 X 是短信文本，y 是标签（ham 或 spam）
+# 读入数据集
+df = pd.read_csv('SMSSpamCollection', sep='\t', header=None, names=['label', 'message'])
+# 将标签转化为二元变量
+df['label'] = df.label.map({'ham': 0, 'spam': 1})
+# 划分训练集和测试集
+X_train, X_test, y_train, y_test = train_test_split(df['message'], df['label'], random_state=1)
+
+# 对文本数据进行处理
+vocab_size = 5000
+max_len = 100
+
+tokenizer = Tokenizer(num_words=vocab_size)
+tokenizer.fit_on_texts(X_train)
+X_train_seq = tokenizer.texts_to_sequences(X_train)
+X_test_seq = tokenizer.texts_to_sequences(X_test)
+
+X_train_pad = pad_sequences(X_train_seq, maxlen=max_len, padding='post')
+X_test_pad = pad_sequences(X_test_seq, maxlen=max_len, padding='post')
+
+# 构建 LSTM 模型
+# model = tf.keras.models.Sequential([
+#     tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=64, input_length=max_len),
+#     tf.keras.layers.LSTM(64),
+#     tf.keras.layers.Dense(1, activation='sigmoid')
+# ])
+
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Embedding(input_dim=vocab_size, output_dim=64),
+    tf.keras.layers.LSTM(64, input_length=max_len),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+# 编译模型
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# 训练模型
+model.fit(X_train_pad, y_train, epochs=5, batch_size=32, validation_data=(X_test_pad, y_test), verbose=1)
+
+# 在测试集上评估模型
+_, accuracy = model.evaluate(X_test_pad, y_test, verbose=0)
+print("Accuracy: {:.2f}".format(accuracy))
+
+
+
+聚类Kmeans函数核心代码Python：（定义Kmeans函数）：
+
+def kmeans(X, n_clusters, max_iters=100):
+    # 初始化聚类中心
+    centroids = X[np.random.choice(len(X), n_clusters, replace=False)]
+    for i in range(max_iters):
+        # 计算每个样本到聚类中心的距离
+        distances = np.linalg.norm(X[:, None] - centroids, axis=2)
+        # 分配样本到最近的聚类中心
+        labels = np.argmin(distances, axis=1)
+        # 计算新的聚类中心
+        new_centroids = np.array([X[labels == j].mean(axis=0) for j in range(n_clusters)])
+        # 判断是否收敛
+        if np.allclose(new_centroids, centroids):
+            break
+        centroids = new_centroids
+    return centroids, labels
+
+
+聚类Kmeans函数核心代码Sklearn:
+
+from sklearn.datasets import load_iris
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+iris = load_iris()
+X = iris.data
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+kmeans = KMeans(n_clusters=3, random_state=20,n_init=10)
+kmeans.fit(X)
+labels = kmeans.labels_
+centroids = kmeans.cluster_centers_
+plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=200, color='red')
+plt.scatter(X[:, 0], X[:, 1], c=labels,s=10)
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.title('Kmeans (Sklearn)')
+plt.show()
+
+聚类Kmedoids函数核心代码Python
+
+def distance(x1, x2):
+    return np.sum(np.abs(x1 - x2)) #manhattan distance
+    #return np.linalg.norm(x1 - x2) 
+    
+def kmedoids(X, n_clusters, max_iters=100):
+    medoids = np.random.choice(len(X), n_clusters, replace=False)
+    for _ in range(max_iters):
+        clusters = [[] for _ in range(n_clusters)]
+        for i, x in enumerate(X):
+            distances = [distance(x, X[m]) for m in medoids]
+            cluster_idx = np.argmin(distances)
+            clusters[cluster_idx].append(i)
+        new_medoids = []
+        for cluster in clusters:
+            cluster_distances = [np.sum([distance(X[i], X[j]) for j in cluster]) for i in cluster]
+            medoid_idx = cluster[np.argmin(cluster_distances)]
+            new_medoids.append(medoid_idx) 
+        if np.array_equal(medoids, new_medoids):
+            break
+        medoids = new_medoids
+    centroids = X[medoids]
+    labels = np.zeros(len(X))
+    for i, cluster in enumerate(clusters):
+        labels[cluster] = i
+    return centroids, labels
