@@ -28,7 +28,7 @@ while True :
 
 	if response.status_code == 200:
 		result = response.json()
-		answer = 						result["choices"][0]["message"]["content"]
+		answer = result["choices"][0]["message"]["content"]
 		print(answer)
 	else:
 		print(f"请求失败，状态码: {response.status_code}，错误信息: {response.text}")
