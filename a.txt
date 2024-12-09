@@ -7,7 +7,7 @@ url = "https://free.v36.cm/v1/chat/completions"
 # 设置请求头，包含授权信息和内容类型
 headers = {
 	"Content-Type": "application/json",
-	"Authorization": f"sk-WMIMvycE3Z7IvCjxEa2411A91b8b4b3aBf2aD582Ef853190"  # 将YOUR_API_KEY替换为你实际的API密钥
+	"Authorization": f""  # 将YOUR_API_KEY替换为你实际的API密钥
 }
 
 data = {
